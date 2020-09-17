@@ -1,0 +1,138 @@
+pipeline {
+  agent any
+  parameters {
+    choice(
+        name: 'Env',
+        choices: "Option1\nOption2",
+        description: 'interesting stuff' )
+  }
+}
+node{
+  stages {
+    stage('Environment') {
+      steps {
+        echo " The environment is ${params.Env}"
+      }
+    }
+  }
+}
+
+
+
+/*Working copy*/
+pipeline {
+agent  any
+stages {
+stage('SCM'){
+   steps{
+      git credentialsId: 'github', 
+        url: 'https://github.com/kiranpayyavuala/sampleproject'
+            }
+        }
+
+  stage('ansible Deploy'){
+   steps{
+       sh '''sudo ansible-playbook -i /opt/host1 new.yml --extra-vars " my_arg=version1.0"'''
+        }
+       }
+}
+}
+
+
+
+
+
+pipeline {
+agent  any
+/*parameters
+        {
+		choice(choices: ['/opt/host1', '/opt/host2'], description: 'select hosts', name: 'host')
+/*		string(defaultValue: '', description: 'select the host', name: 'host', trim: true)*/
+        }	*/	
+stages {
+stage('SCM'){
+   steps{
+      git credentialsId: 'github', 
+        url: 'https://github.com/kiranpayyavuala/sampleproject'
+            }
+        }
+
+  stage('ansible Deploy'){
+   steps{
+       sh '''sudo ansible-playbook -i /opt/host1 deployment.yml --extra-vars " my_arg=version1.0"'''
+        }
+       }
+}
+}
+
+
+
+/*
+Working copy */
+properties([parameters([choice(choices: ['/opt/host1', '/opt/host2'], description: 'selecd the env', name: 'myhost')])])
+pipeline {
+agent  any
+stages {
+stage('SCM'){
+   steps{
+      git credentialsId: 'github', 
+        url: 'https://github.com/kiranpayyavuala/sampleproject'
+            }
+        }
+
+  stage('ansible Deploy'){
+   steps{
+       sh "echo ${params.myhost}"
+       sh '''sudo ansible-playbook -i '${params.myhost}' new.yml --extra-vars " my_arg=version1.0"'''
+        }
+       }
+}
+}
+
+
+
+
+
+
+properties([parameters([choice(choices: ['dev1.inv', 'dev2.inv'], description: 'selecd the env', name: 'myhost')])])
+pipeline {
+agent  any
+stages {
+stage('SCM'){
+   steps{
+      git credentialsId: 'github', 
+        url: 'https://github.com/kiranpayyavuala/sampleproject'
+            }
+        }
+
+  stage('ansible Deploy'){
+   steps{
+       sh "echo ${params.myhost}"
+       ansiblePlaybook extras: "-e my_arg=version1.0", installation: 'ansible', inventory: 'dev1.inv', playbook: 'new.yml'
+        }
+       }
+}
+}
+
+
+pipeline {
+agent  any
+parameters
+        {
+		string(defaultValue: '', description: 'select the host', name: 'host', trim: true)
+        }		
+stages {
+stage('SCM'){
+   steps{
+      git credentialsId: 'github', 
+        url: 'https://github.com/kiranpayyavuala/sampleproject'
+            }
+        }
+
+  stage('ansible Deploy'){
+   steps{
+       sh '''sudo ansible-playbook -i ${params.host} deployment.yml --extra-vars " my_arg=version1.0"'''
+        }
+       }
+}
+}
