@@ -1,0 +1,19 @@
+properties([parameters([choice(choices: ['/opt/host', '/opt/host1'], description: 'selecd the env', name: 'myhost')])])
+pipeline {
+agent  any
+stages {
+stage('SCM'){
+   steps{
+      git credentialsId: 'github', 
+        url: 'https://github.com/kiranpayyavuala/sampleproject'
+            }
+        }
+
+  stage('ansible Deploy'){
+   steps{
+       sh "echo ${params.myhost}"
+       ansiblePlaybook become: true, extras: "-e my_arg=version1.0", installation: 'ansible', inventory: "${params.myhost}", playbook: 'new.yml'
+        }
+       }
+}
+}
